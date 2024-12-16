@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "baseUrl": "src",
+    "outDir": "dist",
+    "sourceMap": false,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
+    "noImplicitAny": true,
+  },
+  "include": ["src/**/*", "assets/**/*","global.d.ts"]
+}
