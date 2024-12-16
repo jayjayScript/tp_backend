@@ -7,7 +7,9 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, require: [true, 'password is required!'], select: false, trim: true },
   verified: { type: Boolean, default: false },
   verificationCode: { type: String, select: false },
+  verificationCodeValidation: { type: String, select: false },
   forgotPasswordCode: { type: String, select: false },
+  forgotPasswordCodeValidation: { type: String, select: false },
 },{
   timestamps: true,
 })

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --watch dist/index",
-    "dev": "tsc index --watch"
+    "dev": "tsc --watch"
   },
   "author": "Miracle Boniface",
   "license": "ISC",

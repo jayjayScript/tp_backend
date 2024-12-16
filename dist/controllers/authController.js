@@ -88,8 +88,8 @@ const signup = async (req, res) => {
 };
 exports.signup = signup;
 const signin = async (req, res) => {
-    const { email, password } = req.body;
     try {
+        const { email, password } = req.body;
         const { error, value } = validator_1.signinSchema.validate(req.body);
         if (error) {
             res.status(401).json({ success: false, message: error.details[0].message });
@@ -129,9 +129,7 @@ const signout = async (req, res) => {
 };
 exports.signout = signout;
 const sendVerificationCode = async (req, res) => {
-    const token = req.cookies['Authorization'].split(' ')[1];
-    const user = jsonwebtoken_1.default.verify(token, process.env.TOKEN_SECRET || '');
-    const { email } = user;
+    const { email } = req.user;
     try {
         const existingUser = await (0, usersModel_1.getUserByEmail)(email);
         if (!existingUser) {
@@ -147,6 +145,7 @@ const sendVerificationCode = async (req, res) => {
         if (info === true) {
             const hashedCodeValue = (0, hashing_1.hmacProcess)(codeValue, process.env.HMAC_VERIFICATION_CODE_SECRET);
             existingUser.verificationCode = hashedCodeValue;
+            existingUser.verificationCodeValidation = Date.now();
             await existingUser.save();
             res.status(200).send({ success: true, message: 'Code Sent!' });
             return;
@@ -160,16 +159,49 @@ const sendVerificationCode = async (req, res) => {
 exports.sendVerificationCode = sendVerificationCode;
 const verifyCode = async (req, res) => {
     const { providedCode } = req.body;
-    const token = req.cookies['Authorization'].split(' ')[1];
-    const user = jsonwebtoken_1.default.verify(token, process.env.TOKEN_SECRET || '');
-    const { email } = user;
+    const { email } = req.user;
     try {
-        const existingUser = await (0, usersModel_1.getUserByEmail)(email);
+        const { error, value } = validator_1.acceptCodeSchema.validate({ providedCode });
+        if (error) {
+            res.status(401).json({ success: false, message: error.details[0].message });
+            return;
+        }
+        const codeValue = providedCode.toString();
+        const existingUser = await (0, usersModel_1.getUserByEmail)(email).select('+verificationCode +verificationCodeValidation');
         if (!existingUser) {
             res.status(401).json({ success: false, message: 'User does not exists!' });
             return;
         }
+        if (existingUser.verified) {
+            res.status(400).json({ success: false, message: 'User already verified!' });
+            return;
+        }
+        if (!existingUser.verificationCode || !existingUser.verificationCodeValidation) {
+            res.status(400).json({ success: false, message: 'Something Went Wrong!' });
+            return;
+        }
+        if (Date.now() - existingUser.verificationCodeValidation > 5 * 60 * 1000) {
+            res.status(400).json({ success: false, message: 'Code Has Been Expired!' });
+            return;
+        }
+        const hashedCodeValue = (0, hashing_1.hmacProcess)(codeValue, process.env.HMAC_VERIFICATION_CODE_SECRET);
+        if (hashedCodeValue === existingUser.verificationCode) {
+            existingUser.verified = true;
+            existingUser.verificationCode = undefined;
+            existingUser.verificationCodeValidation = undefined;
+            await existingUser.save();
+            res.status(200).send({ success: true, message: 'Your account has been verified!' });
+            return;
+        }
+        else if (hashedCodeValue !== existingUser.verificationCode) {
+            res.status(400).json({ success: false, message: 'Code is Invalid!' });
+            return;
+        }
+        res.status(400).json({ success: false, message: 'Unexpected occurred!' });
+        return;
     }
-    catch (e) { }
+    catch (e) {
+        console.log(e);
+    }
 };
 exports.verifyCode = verifyCode;
