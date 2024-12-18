@@ -36,12 +36,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyCode = exports.sendVerificationCode = exports.signout = exports.signin = exports.signup = void 0;
+exports.changePassword = exports.verifyCode = exports.sendVerificationCode = exports.signout = exports.signin = exports.signup = void 0;
 const validator_1 = require("../middlewares/validator");
 const usersModel_1 = __importStar(require("../models/usersModel"));
 const hashing_1 = __importStar(require("../helpers/hashing"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const mailer_1 = require("../middlewares/mailer");
+// import '../middlewares/wallet'
 const signup = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -205,3 +206,6 @@ const verifyCode = async (req, res) => {
     }
 };
 exports.verifyCode = verifyCode;
+const changePassword = async (req, res) => {
+};
+exports.changePassword = changePassword;

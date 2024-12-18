@@ -11,6 +11,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const http_1 = __importDefault(require("http"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const authRouter_1 = __importDefault(require("./routers/authRouter"));
+const transactionRouter_1 = __importDefault(require("./routers/transactionRouter"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT;
@@ -23,6 +24,7 @@ app.use((0, cookie_parser_1.default)());
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use('/api/auth', authRouter_1.default);
+app.use('/api', transactionRouter_1.default);
 const server = http_1.default.createServer(app);
 mongoose_1.default.Promise = Promise;
 mongoose_1.default.connect(MONGO_URI).then(() => {

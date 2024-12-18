@@ -28,7 +28,7 @@ const identifer = (req, res, next) => {
         }
     }
     catch (error) {
-        console.log(error);
+        res.status(403).send({ success: false, message: error.message });
     }
 };
 exports.identifer = identifer;

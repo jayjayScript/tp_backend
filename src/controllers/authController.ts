@@ -4,6 +4,7 @@ import UserModel, { getUserByEmail } from "../models/usersModel"
 import doHash, { hmacProcess, validateHash } from "../helpers/hashing"
 import jwt from 'jsonwebtoken';
 import { sendCode } from "../middlewares/mailer"
+// import '../middlewares/wallet'
 
 export const signup = async (req: Request, res: Response) => {
   const { email, password } = req.body
@@ -102,7 +103,6 @@ export const signout = async (req: Request, res: Response) => {
 export const sendVerificationCode = async (req: Request, res: Response) => {
   const { email } = req.user 
   try {
-
     const existingUser: any = await getUserByEmail(email);
     if (!existingUser) {
       res.status(401).json({ success: false, message: 'User does not exists!' })
@@ -173,4 +173,8 @@ export const verifyCode = async (req: Request, res: Response) => {
   } catch (e) {
     console.log(e)
   }
+}
+
+export const changePassword = async (req: Request, res: Response) => {
+  
 }

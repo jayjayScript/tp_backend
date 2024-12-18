@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser'
 import http from 'http';
 import mongoose from 'mongoose';
 import authRouter from './routers/authRouter';
+import transactionRouter from './routers/transactionRouter';
 
 dotenv.config()
 const app = express()
@@ -21,6 +22,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 
 app.use('/api/auth', authRouter)
+app.use('/api',transactionRouter)
 
 const server = http.createServer(app)
 mongoose.Promise = Promise

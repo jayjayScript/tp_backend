@@ -20,7 +20,7 @@ export const identifer = (req: Request, res: Response, next: NextFunction) => {
         }else{
             throw new Error('error in the token') 
         }
-    } catch (error) {
-        console.log(error)
+    } catch (error:any) {
+        res.status(403).send({ success: false, message: error.message})
     }
 }
