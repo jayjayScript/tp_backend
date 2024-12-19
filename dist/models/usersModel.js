@@ -15,6 +15,11 @@ const UserSchema = new mongoose_1.default.Schema({
     verificationCodeValidation: { type: String, select: false },
     forgotPasswordCode: { type: String, select: false },
     forgotPasswordCodeValidation: { type: String, select: false },
+    wallet: {
+        balance: { type: Number, required: true, default: 0 },
+        assetValue: { type: Number, required: true, default: 0 },
+        watchList: { type: Array, required: true, default: [] }
+    },
 }, {
     timestamps: true,
 });

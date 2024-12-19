@@ -5,8 +5,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser'
 import http from 'http';
 import mongoose from 'mongoose';
-import authRouter from './routers/authRouter';
-import transactionRouter from './routers/transactionRouter';
+import router from './routers';
 
 dotenv.config()
 const app = express()
@@ -15,14 +14,15 @@ const MONGO_URI: string = process.env.MONGO_URI || ''
 const BASE_URL = process.env.BASE_URL || ''
 
 app.use(cors({
-  credentials: true
+  credentials: true,
+  origin: '*'
 }))
 app.use(cookieParser())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
+app.use(router)
 
-app.use('/api/auth', authRouter)
-app.use('/api',transactionRouter)
+
 
 const server = http.createServer(app)
 mongoose.Promise = Promise

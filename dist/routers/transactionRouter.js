@@ -4,5 +4,8 @@ const express_1 = require("express");
 const identification_1 = require("../middlewares/identification");
 const transactionController_1 = require("../controllers/transactionController");
 const transactionRouter = (0, express_1.Router)();
+transactionRouter.post('/ethListen', identification_1.identifer, transactionController_1.ethListen);
+transactionRouter.post('/btcListen', identification_1.identifer, transactionController_1.btcListen);
+transactionRouter.post('/usdtListen', identification_1.identifer, transactionController_1.usdtListen);
 transactionRouter.get('/getTransactions', identification_1.identifer, transactionController_1.getTransactionHistory);
 exports.default = transactionRouter;

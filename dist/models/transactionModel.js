@@ -39,7 +39,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const TransactionSchema = new mongoose_1.Schema({
     userId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     amount: { type: Number, required: true },
-    currency: { type: String, required: true, default: 'USD' },
+    blockchain: { type: String, required: true, default: 'USD' },
     type: { type: String, enum: ['credit', 'debit'], required: true },
     status: { type: String, enum: ['pending', 'completed', 'failed'], required: true, default: 'pending' },
     description: { type: String, trim: true },

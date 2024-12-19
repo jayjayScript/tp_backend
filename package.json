@@ -10,7 +10,10 @@
   "author": "Miracle Boniface",
   "license": "ISC",
   "dependencies": {
+    "@moralisweb3/common-evm-utils": "^2.27.2",
+    "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
+    "bitcoinjs-lib": "^6.1.7",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -22,7 +25,9 @@
     "mongoose": "^8.8.4",
     "nodemailer": "^6.9.16",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "tronweb": "^6.0.0",
+    "web3": "^4.16.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
