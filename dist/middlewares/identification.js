@@ -15,6 +15,7 @@ const identifer = (req, res, next) => {
     }
     if (!token) {
         res.status(403).send({ success: false, message: 'unauthorized' });
+        return;
     }
     try {
         const authorization = token.split(' ')[1];
@@ -29,6 +30,7 @@ const identifer = (req, res, next) => {
     }
     catch (error) {
         res.status(403).send({ success: false, message: error.message });
+        return;
     }
 };
 exports.identifer = identifer;

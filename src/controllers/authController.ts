@@ -4,6 +4,7 @@ import UserModel, { getUserByEmail } from "../models/usersModel"
 import doHash, { hmacProcess, validateHash } from "../helpers/hashing"
 import jwt from 'jsonwebtoken';
 import { sendCode } from "../middlewares/mailer"
+import TransactionModel from "../models/transactionModel";
 
 
 export const signup = async (req: Request, res: Response) => {
@@ -101,21 +102,21 @@ export const signout = async (req: Request, res: Response) => {
 
 export const isVerified = async (req: Request, res: Response) => {
   const { email } = req.user
-  try{
+  try {
     const existingUser: any = await getUserByEmail(email);
     if (!existingUser) {
       res.status(401).json({ success: false, message: 'User does not exists!' })
       return
     }
-    res.status(200).send({ success: true, verified: existingUser.verified})
-  }catch (e:any) {
-    res.status(400).send({ success: false, message: e.message})
+    res.status(200).send({ success: true, verified: existingUser.verified })
+  } catch (e: any) {
+    res.status(400).send({ success: false, message: e.message })
   }
 }
 
 
 export const sendVerificationCode = async (req: Request, res: Response) => {
-  const { email } = req.user 
+  const { email } = req.user
   try {
     const existingUser: any = await getUserByEmail(email);
     if (!existingUser) {
@@ -190,5 +191,5 @@ export const verifyCode = async (req: Request, res: Response) => {
 }
 
 export const changePassword = async (req: Request, res: Response) => {
-  
+
 }

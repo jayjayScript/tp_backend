@@ -2,7 +2,7 @@ import axios from "axios";
 import Web3 from "web3";
 import { TronWeb } from "tronweb";
 import { Request, Response } from "express"
-import TransactionModel, { getTransactionById } from "../models/transactionModel"
+import TransactionModel from "../models/transactionModel"
 import getCryptoToUsdtRate from "../helpers/getCryptoToUsdtRate";
 import { getUserByEmail } from "../models/usersModel";
 
@@ -54,7 +54,7 @@ export const ethListen = async (req: Request, res: Response) => {
                 blockchain: 'USDT',
                 type: 'credit',
                 status: 'completed',
-                description: ''
+                description: 'Account Deposit'
             })
             await existingUser.save().then(() => {
                 newTransaction.save().then(() => {
@@ -114,7 +114,7 @@ export const btcListen = async (req: Request, res: Response) => {
                 blockchain: 'USDT',
                 type: 'credit',
                 status: 'completed',
-                description: ''
+                description: 'Account Deposit'
             })
             await existingUser.save().then(() => {
                 newTransaction.save().then(() => {
@@ -163,14 +163,14 @@ export const usdtListen = async (req: Request, res: Response) => {
                 blockchain: 'USDT',
                 type: 'credit',
                 status: 'completed',
-                description: ''
+                description: 'Account Deposit'
             })
             await existingUser.save().then(() => {
                 newTransaction.save().then(() => {
                     res.status(200).json({ success: true, message: 'Deposit has been made successfully', newTransaction });
                     return
                 }).catch((err: any) => {
-                    res.status(500).send({ success: false, message: `failed to save user's Transaction data, but user's data was saved, Error: ${err}` })
+                    res.status(500).send({ success: false, message: `failed to save user's Transaction data, but user's data was saved, Error: ${err.message}` })
                     return
                 })
             }).catch((err: any) => {
@@ -201,7 +201,7 @@ export const getTransactionHistory = async (req: Request, res: Response) => {
             res.status(401).json({ success: false, message: 'User does not exists!' })
             return
         }
-        const transactions = getTransactionById(existingUser._id)
+        const transactions = await TransactionModel.find({userId: existingUser._id})
         if (!transactions) {
             res.status(401).json({ success: false, message: 'No transactions found!' })
             return
@@ -210,5 +210,6 @@ export const getTransactionHistory = async (req: Request, res: Response) => {
         return
     } catch (e:any) {
         res.status(500).send({success: false, message: e.message})
+        return
     }
 }

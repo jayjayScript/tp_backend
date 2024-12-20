@@ -18,7 +18,7 @@ const UserSchema = new mongoose_1.default.Schema({
     wallet: {
         balance: { type: Number, required: true, default: 0 },
         assetValue: { type: Number, required: true, default: 0 },
-        watchList: { type: Array, required: true, default: [] }
+        watchList: { type: [String], required: true, default: [] }
     },
 }, {
     timestamps: true,

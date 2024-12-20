@@ -10,6 +10,7 @@ export const identifer = (req: Request, res: Response, next: NextFunction) => {
     }
     if(!token){
         res.status(403).send({ success: false, message: 'unauthorized' })
+        return
     }
     try {
         const authorization = token.split(' ')[1]
@@ -22,5 +23,6 @@ export const identifer = (req: Request, res: Response, next: NextFunction) => {
         }
     } catch (error:any) {
         res.status(403).send({ success: false, message: error.message})
+        return
     }
 }

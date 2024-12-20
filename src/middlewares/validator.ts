@@ -24,3 +24,10 @@ export const changePasswordSchema = Joi.object({
   newPassword: Joi.string().required().pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$')),
   oldPassword: Joi.string().required().pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$'))
 })
+
+export const watchlistSchema = Joi.object({
+  watchlist: Joi.alternatives().try(
+    Joi.array().items(Joi.string()).required(),
+    Joi.string().required()
+  )
+})
