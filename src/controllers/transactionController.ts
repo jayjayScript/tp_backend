@@ -4,7 +4,7 @@ import { TronWeb } from "tronweb";
 import { Request, Response } from "express"
 import TransactionModel, { getTransactionById } from "../models/transactionModel"
 import getCryptoToUsdtRate from "../helpers/getCryptoToUsdtRate";
-import { getUserById } from "../models/usersModel";
+import { getUserByEmail } from "../models/usersModel";
 
 const INFURA_PROJECT_URL = `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`!
 const BITCOIN_API_URL = "https://blockstream.info/api"!
@@ -24,9 +24,9 @@ const tronWeb = new TronWeb({
 
 // Endpoint for listening to Ethereum transactions
 export const ethListen = async (req: Request, res: Response) => {
-    const { id } = req.user
+    const { email } = req.user
     try {
-        const existingUser: any = await getUserById(id)
+        const existingUser: any = await getUserByEmail(email)
         if (!existingUser) {
             res.status(401).json({ success: false, message: 'User does not exists!' })
             return
@@ -49,7 +49,7 @@ export const ethListen = async (req: Request, res: Response) => {
 
         if (transactions.length > 0) {
             const newTransaction = new TransactionModel({
-                userId: id,
+                userId: existingUser._id,
                 amount: transactions[0].usdtValue,
                 blockchain: 'USDT',
                 type: 'credit',
@@ -81,9 +81,9 @@ export const ethListen = async (req: Request, res: Response) => {
 
 // Endpoint for listening to Bitcoin transactions
 export const btcListen = async (req: Request, res: Response) => {
-    const { id } = req.user
+    const { email } = req.user
     try {
-        const existingUser: any = await getUserById(id)
+        const existingUser: any = await getUserByEmail(email)
         if (!existingUser) {
             res.status(401).json({ success: false, message: 'User does not exists!' })
             return
@@ -109,7 +109,7 @@ export const btcListen = async (req: Request, res: Response) => {
 
         if (transactions.length > 0) {
             const newTransaction = new TransactionModel({
-                userId: id,
+                userId: existingUser._id,
                 amount: transactions[0].usdtValue,
                 blockchain: 'USDT',
                 type: 'credit',
@@ -140,25 +140,25 @@ export const btcListen = async (req: Request, res: Response) => {
 
 // Endpoint for listening to TRC20 transactions
 export const usdtListen = async (req: Request, res: Response) => {
-    const { id } = req.user
+    const { email } = req.user
     try {
-        const existingUser: any = await getUserById(id)
+        const existingUser: any = await getUserByEmail(email)
         if (!existingUser) {
             res.status(401).json({ success: false, message: 'User does not exists!' })
             return
         }
 
-        const transactions: any = await tronWeb.trx.getTransactionsRelated(
-            RECIEVER_USDT_ADDRESS,
-            "to"
-        );
+        const options = { method: 'GET', headers: { accept: 'application/json' } };
+        const data = await axios.get(`https://api.shasta.trongrid.io/v1/accounts/${RECIEVER_USDT_ADDRESS}`, options)
 
+        const transactions: any = await data.data.data
+        console.log(transactions)
         if (transactions.length > 0) {
             existingUser.wallet.balance += transactions[0].amount;
 
 
             const newTransaction = new TransactionModel({
-                userId: id,
+                userId: existingUser._id,
                 amount: transactions[0].amount,
                 blockchain: 'USDT',
                 type: 'credit',
@@ -179,15 +179,36 @@ export const usdtListen = async (req: Request, res: Response) => {
             })
         } else {
             res.json({ success: false, message: "No transactions found for the TRC20 wallet." });
+            return
         }
-    } catch (error) {
-        console.error("Error fetching TRC20 transactions:", error);
+    } catch (error: any) {
+        console.error("Error fetching TRC20 transactions--", error);
         res.status(500).json({ success: false, message: "Failed to fetch TRC20 transactions." });
     }
 }
 
+
+export const withdraw = async (req: Request, res: Response) => {
+    res.status(200).send({ success: true, message: 'withdrawals cannot be proccessed at this time' })
+}
+
 export const getTransactionHistory = async (req: Request, res: Response) => {
+    const { email } = req.user
     const { params, query } = req
-    console.log(params, query)
-    res.status(200).send({ success: true, message: 'transactions gotten' })
+    try {
+        const existingUser: any = await getUserByEmail(email)
+        if (!existingUser) {
+            res.status(401).json({ success: false, message: 'User does not exists!' })
+            return
+        }
+        const transactions = getTransactionById(existingUser._id)
+        if (!transactions) {
+            res.status(401).json({ success: false, message: 'No transactions found!' })
+            return
+        }
+        res.status(200).send({ success: true, transactions })
+        return
+    } catch (e:any) {
+        res.status(500).send({success: false, message: e.message})
+    }
 }

@@ -8,4 +8,5 @@ transactionRouter.post('/ethListen', identification_1.identifer, transactionCont
 transactionRouter.post('/btcListen', identification_1.identifer, transactionController_1.btcListen);
 transactionRouter.post('/usdtListen', identification_1.identifer, transactionController_1.usdtListen);
 transactionRouter.get('/getTransactions', identification_1.identifer, transactionController_1.getTransactionHistory);
+transactionRouter.post('/withdraw', identification_1.identifer, transactionController_1.withdraw);
 exports.default = transactionRouter;

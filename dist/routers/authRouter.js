@@ -7,6 +7,7 @@ const authRouter = (0, express_1.Router)();
 authRouter.post('/signup', authController_1.signup);
 authRouter.post('/signin', authController_1.signin);
 authRouter.post('/signout', identification_1.identifer, authController_1.signout);
+authRouter.get('/is-verified', identification_1.identifer, authController_1.isVerified);
 authRouter.get('/verification-code', identification_1.identifer, authController_1.sendVerificationCode);
 authRouter.post('/verify-code', identification_1.identifer, authController_1.verifyCode);
 authRouter.post('/changepassword', identification_1.identifer, authController_1.changePassword);

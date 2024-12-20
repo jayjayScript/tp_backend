@@ -23,7 +23,7 @@ app.use((0, cors_1.default)({
 app.use((0, cookie_parser_1.default)());
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
-app.use(routers_1.default);
+app.use('/api', routers_1.default);
 const server = http_1.default.createServer(app);
 mongoose_1.default.Promise = Promise;
 mongoose_1.default.connect(MONGO_URI).then(() => {

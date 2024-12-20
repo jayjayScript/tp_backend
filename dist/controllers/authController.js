@@ -36,15 +36,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changePassword = exports.verifyCode = exports.sendVerificationCode = exports.signout = exports.signin = exports.signup = void 0;
+exports.changePassword = exports.verifyCode = exports.sendVerificationCode = exports.isVerified = exports.signout = exports.signin = exports.signup = void 0;
 const validator_1 = require("../middlewares/validator");
 const usersModel_1 = __importStar(require("../models/usersModel"));
 const hashing_1 = __importStar(require("../helpers/hashing"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const mailer_1 = require("../middlewares/mailer");
-// import '../middlewares/wallet'
 const signup = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, firstName, lastName } = req.body;
     try {
         const { error, value } = validator_1.signupSchema.validate(req.body);
         if (error) {
@@ -61,9 +60,7 @@ const signup = async (req, res) => {
             ...value,
             password: (await hashedPassword).toString()
         });
-        console.log(newUser);
         newUser.save().then(() => {
-            console.log(`user: ${email} is saved`);
             const token = jsonwebtoken_1.default.sign({
                 userId: newUser.id,
                 email: newUser.email,
@@ -72,15 +69,17 @@ const signup = async (req, res) => {
                 expiresIn: '3d'
             });
             const Days = (3 * (24 * 3600000)); // 3 Days
-            res.cookie('Authorization', 'Bearer ' + token, { expires: new Date(Date.now() + Days), httpOnly: process.env.NODE_ENV === 'production', secure: process.env.NODE_ENV === 'production' }).send({
+            res.status(200).cookie('Authorization', 'Bearer ' + token, { expires: new Date(Date.now() + Days), httpOnly: process.env.NODE_ENV === 'production', secure: process.env.NODE_ENV === 'production' }).send({
                 success: true,
                 token,
-                message: 'Logged In successfully'
+                message: 'Logged In successfully',
+                user: { firstName, lastName, email }
             });
-            res.status(200).send({ success: true, message: 'Your Account has been created successfully', newUser });
+            return;
         }).catch((e) => {
             console.log(e);
             res.status(401).send({ success: false, message: e.message });
+            return;
         });
     }
     catch (e) {
@@ -129,6 +128,21 @@ const signout = async (req, res) => {
     res.clearCookie('Authorization').status(200).send({ success: true, message: 'Logged Out Successfully' });
 };
 exports.signout = signout;
+const isVerified = async (req, res) => {
+    const { email } = req.user;
+    try {
+        const existingUser = await (0, usersModel_1.getUserByEmail)(email);
+        if (!existingUser) {
+            res.status(401).json({ success: false, message: 'User does not exists!' });
+            return;
+        }
+        res.status(200).send({ success: true, verified: existingUser.verified });
+    }
+    catch (e) {
+        res.status(400).send({ success: false, message: e.message });
+    }
+};
+exports.isVerified = isVerified;
 const sendVerificationCode = async (req, res) => {
     const { email } = req.user;
     try {

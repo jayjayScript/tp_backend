@@ -1,13 +1,46 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransactionHistory = exports.usdtListen = exports.btcListen = exports.ethListen = void 0;
+exports.getTransactionHistory = exports.withdraw = exports.usdtListen = exports.btcListen = exports.ethListen = void 0;
 const axios_1 = __importDefault(require("axios"));
 const web3_1 = __importDefault(require("web3"));
 const tronweb_1 = require("tronweb");
-const transactionModel_1 = __importDefault(require("../models/transactionModel"));
+const transactionModel_1 = __importStar(require("../models/transactionModel"));
 const getCryptoToUsdtRate_1 = __importDefault(require("../helpers/getCryptoToUsdtRate"));
 const usersModel_1 = require("../models/usersModel");
 const INFURA_PROJECT_URL = `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`;
@@ -24,9 +57,9 @@ const tronWeb = new tronweb_1.TronWeb({
 });
 // Endpoint for listening to Ethereum transactions
 const ethListen = async (req, res) => {
-    const { id } = req.user;
+    const { email } = req.user;
     try {
-        const existingUser = await (0, usersModel_1.getUserById)(id);
+        const existingUser = await (0, usersModel_1.getUserByEmail)(email);
         if (!existingUser) {
             res.status(401).json({ success: false, message: 'User does not exists!' });
             return;
@@ -45,7 +78,7 @@ const ethListen = async (req, res) => {
         });
         if (transactions.length > 0) {
             const newTransaction = new transactionModel_1.default({
-                userId: id,
+                userId: existingUser._id,
                 amount: transactions[0].usdtValue,
                 blockchain: 'USDT',
                 type: 'credit',
@@ -78,9 +111,9 @@ const ethListen = async (req, res) => {
 exports.ethListen = ethListen;
 // Endpoint for listening to Bitcoin transactions
 const btcListen = async (req, res) => {
-    const { id } = req.user;
+    const { email } = req.user;
     try {
-        const existingUser = await (0, usersModel_1.getUserById)(id);
+        const existingUser = await (0, usersModel_1.getUserByEmail)(email);
         if (!existingUser) {
             res.status(401).json({ success: false, message: 'User does not exists!' });
             return;
@@ -100,7 +133,7 @@ const btcListen = async (req, res) => {
         });
         if (transactions.length > 0) {
             const newTransaction = new transactionModel_1.default({
-                userId: id,
+                userId: existingUser._id,
                 amount: transactions[0].usdtValue,
                 blockchain: 'USDT',
                 type: 'credit',
@@ -132,18 +165,21 @@ const btcListen = async (req, res) => {
 exports.btcListen = btcListen;
 // Endpoint for listening to TRC20 transactions
 const usdtListen = async (req, res) => {
-    const { id } = req.user;
+    const { email } = req.user;
     try {
-        const existingUser = await (0, usersModel_1.getUserById)(id);
+        const existingUser = await (0, usersModel_1.getUserByEmail)(email);
         if (!existingUser) {
             res.status(401).json({ success: false, message: 'User does not exists!' });
             return;
         }
-        const transactions = await tronWeb.trx.getTransactionsRelated(RECIEVER_USDT_ADDRESS, "to");
+        const options = { method: 'GET', headers: { accept: 'application/json' } };
+        const data = await axios_1.default.get(`https://api.shasta.trongrid.io/v1/accounts/${RECIEVER_USDT_ADDRESS}`, options);
+        const transactions = await data.data.data;
+        console.log(transactions);
         if (transactions.length > 0) {
             existingUser.wallet.balance += transactions[0].amount;
             const newTransaction = new transactionModel_1.default({
-                userId: id,
+                userId: existingUser._id,
                 amount: transactions[0].amount,
                 blockchain: 'USDT',
                 type: 'credit',
@@ -165,17 +201,38 @@ const usdtListen = async (req, res) => {
         }
         else {
             res.json({ success: false, message: "No transactions found for the TRC20 wallet." });
+            return;
         }
     }
     catch (error) {
-        console.error("Error fetching TRC20 transactions:", error);
+        console.error("Error fetching TRC20 transactions--", error);
         res.status(500).json({ success: false, message: "Failed to fetch TRC20 transactions." });
     }
 };
 exports.usdtListen = usdtListen;
+const withdraw = async (req, res) => {
+    res.status(200).send({ success: true, message: 'withdrawals cannot be proccessed at this time' });
+};
+exports.withdraw = withdraw;
 const getTransactionHistory = async (req, res) => {
+    const { email } = req.user;
     const { params, query } = req;
-    console.log(params, query);
-    res.status(200).send({ success: true, message: 'transactions gotten' });
+    try {
+        const existingUser = await (0, usersModel_1.getUserByEmail)(email);
+        if (!existingUser) {
+            res.status(401).json({ success: false, message: 'User does not exists!' });
+            return;
+        }
+        const transactions = (0, transactionModel_1.getTransactionById)(existingUser._id);
+        if (!transactions) {
+            res.status(401).json({ success: false, message: 'No transactions found!' });
+            return;
+        }
+        res.status(200).send({ success: true, transactions });
+        return;
+    }
+    catch (e) {
+        res.status(500).send({ success: false, message: e.message });
+    }
 };
 exports.getTransactionHistory = getTransactionHistory;

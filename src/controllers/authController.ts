@@ -4,10 +4,10 @@ import UserModel, { getUserByEmail } from "../models/usersModel"
 import doHash, { hmacProcess, validateHash } from "../helpers/hashing"
 import jwt from 'jsonwebtoken';
 import { sendCode } from "../middlewares/mailer"
-// import '../middlewares/wallet'
+
 
 export const signup = async (req: Request, res: Response) => {
-  const { email, password } = req.body
+  const { email, password, firstName, lastName } = req.body
   try {
     const { error, value } = signupSchema.validate(req.body);
     if (error) {
@@ -27,9 +27,7 @@ export const signup = async (req: Request, res: Response) => {
       ...value,
       password: (await hashedPassword).toString()
     })
-    console.log(newUser)
     newUser.save().then(() => {
-      console.log(`user: ${email} is saved`)
       const token = jwt.sign({
         userId: newUser.id,
         email: newUser.email,
@@ -41,15 +39,17 @@ export const signup = async (req: Request, res: Response) => {
         }
       );
       const Days = (3 * (24 * 3600000));     // 3 Days
-      res.cookie('Authorization', 'Bearer ' + token, { expires: new Date(Date.now() + Days), httpOnly: process.env.NODE_ENV === 'production', secure: process.env.NODE_ENV === 'production' }).send({
+      res.status(200).cookie('Authorization', 'Bearer ' + token, { expires: new Date(Date.now() + Days), httpOnly: process.env.NODE_ENV === 'production', secure: process.env.NODE_ENV === 'production' }).send({
         success: true,
         token,
-        message: 'Logged In successfully'
+        message: 'Logged In successfully',
+        user: { firstName, lastName, email }
       })
-      res.status(200).send({ success: true, message: 'Your Account has been created successfully', newUser })
+      return
     }).catch((e: Error) => {
       console.log(e)
       res.status(401).send({ success: false, message: e.message })
+      return
     })
   } catch (e) {
     console.log(e)
@@ -97,6 +97,20 @@ export const signin = async (req: Request, res: Response) => {
 
 export const signout = async (req: Request, res: Response) => {
   res.clearCookie('Authorization').status(200).send({ success: true, message: 'Logged Out Successfully' })
+}
+
+export const isVerified = async (req: Request, res: Response) => {
+  const { email } = req.user
+  try{
+    const existingUser: any = await getUserByEmail(email);
+    if (!existingUser) {
+      res.status(401).json({ success: false, message: 'User does not exists!' })
+      return
+    }
+    res.status(200).send({ success: true, verified: existingUser.verified})
+  }catch (e:any) {
+    res.status(400).send({ success: false, message: e.message})
+  }
 }
 
 
